@@ -1,0 +1,17 @@
+{{- if and .Values.addons.esphome.enabled  -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "home-assistant.fullname" . }}-esphome
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.addons.esphome.service.type }}
+  ports:
+    - port: {{ .Values.addons.esphome.service.port }}
+      targetPort: esphome
+      protocol: TCP
+      name: esphome
+  selector:
+    {{- include "home-assistant.selectorLabels" . | nindent 4 }}
+{{- end }}
