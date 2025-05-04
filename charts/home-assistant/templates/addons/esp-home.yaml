@@ -14,4 +14,45 @@ spec:
       name: esphome
   selector:
     {{- include "home-assistant.selectorLabels" . | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "home-assistant.labels" . | nindent 4 }}
+  name: {{ include "home-assistant.fullname" . }}-esphome
+spec:  
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name:  {{ include "home-assistant.fullname" . }}-esphome
+
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name:  {{ include "home-assistant.fullname" . }}-esphome
+    spec:
+      containers:
+        - name: esphome
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          args: []
+          image: "{{ .Values.addons.esphome.image.repository }}:{{ .Values.addons.esphome.image.tag }}"
+          imagePullPolicy: "{{ .Values.addons.esphome.image.pullPolicy }}"
+          ports:
+          - containerPort: 6052
+            name: esphome
+            protocol: TCP
+          {{- with .Values.addons.esphome.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /config
+            name: {{ include "home-assistant.fullname" . }}
+          {{- if .Values.addons.esphome.additionalMounts }}
+            {{- .Values.addons.esphome.additionalMounts | toYaml | nindent 10 }}
+          {{- end }}
+
+
 {{- end }}
